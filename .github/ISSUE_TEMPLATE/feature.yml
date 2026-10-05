@@ -1,0 +1,30 @@
+name: Funcionalidade
+description: Proposta de nova funcionalidade ou melhoria
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema / necessidade
+      description: Qual dor do usuário isso resolve? (não descreva a solução ainda)
+    validations:
+      required: true
+  - type: textarea
+    id: story
+    attributes:
+      label: História de usuário
+      placeholder: Como <papel>, quero <ação>, para <benefício>.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Critérios de aceite
+      placeholder: "Dado ... Quando ... Então ..."
+    validations:
+      required: true
+  - type: textarea
+    id: nfr
+    attributes:
+      label: Requisitos não funcionais
+      description: Performance, segurança, volume, auditoria…

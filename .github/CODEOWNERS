@@ -1,0 +1,6 @@
+# Donos padrão: revisão obrigatória (com branch protection "Require review from Code Owners").
+*                   @{{GITHUB_OWNER}}
+
+# Áreas sensíveis
+/.github/           @{{GITHUB_OWNER}}
+/docs/architecture/ @{{GITHUB_OWNER}}

@@ -1,0 +1,21 @@
+# Atualizações automáticas de dependências.
+# TODO(lang): adicionar o ecossistema da stack (pip, npm, gomod, maven, gradle, nuget, cargo…).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: ci
+
+  # Habilite quando existir Dockerfile:
+  # - package-ecosystem: docker
+  #   directory: /
+  #   schedule:
+  #     interval: weekly
+  #   commit-message:
+  #     prefix: build
