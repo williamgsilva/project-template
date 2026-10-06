@@ -55,6 +55,12 @@ Validado automaticamente pelo hook `commit-msg` (pre-commit).
 aberto; ao fazer merge desse PR, a versão é publicada com SBOM assinado.
 **Não edite o CHANGELOG à mão** — escreva bons commits.
 
+> **PR de release:** como é atualizado pelo bot do GitHub Actions, o GitHub retém os checks
+> como *action_required*. Abra o PR e clique em **Approve and run workflows** antes do merge
+> (alternativa sem aprovação manual: token próprio em `RELEASE_PLEASE_TOKEN` no `release.yml`).
+> Não faça merge de outros PRs entre ajustar o PR de release e mergeá-lo: o release-please o
+> regenera a cada push na `main`.
+>
 > Use **apenas squash merge** (Settings → General → Pull Requests: desmarque *merge commits* e
 > *rebase merging*). Com merge commit, a mensagem do merge repete o título do PR e o
 > release-please conta a mesma mudança duas vezes no CHANGELOG.

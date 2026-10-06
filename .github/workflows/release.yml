@@ -5,6 +5,13 @@ name: Release
 # Em seguida, este workflow anexa o SBOM e a assinatura (keyless, Sigstore) ao release.
 #
 # Requer (Settings → Actions → General): "Allow GitHub Actions to create and approve pull requests".
+# Os checks do PR de release ficam retidos ("action_required") por virem do bot: aprove-os no PR
+# ("Approve and run workflows"). Para evitar isso, use um token próprio:
+#   token: ${{ secrets.RELEASE_PLEASE_TOKEN }}   (no passo do release-please)
+# Verificar a assinatura do SBOM baixado do release:
+#   cosign verify-blob --bundle sbom.spdx.json.sigstore.json \
+#     --certificate-identity "https://github.com/<dono>/<repo>/.github/workflows/release.yml@refs/heads/main" \
+#     --certificate-oidc-issuer https://token.actions.githubusercontent.com sbom.spdx.json
 
 on:
   push:
