@@ -150,6 +150,7 @@ Faça uma vez por projeto, logo após criar o repositório:
 | 4 | GitHub → Settings → Branches: proteger `main` (PR obrigatório, checks `Lint`, `Test`, `Build`, `Secrets`, `Vulnerabilities`, `Workflows`, 1 aprovação, sem force-push, histórico linear) | Garante o fluxo trunk-based (veja [docs/standards/git.md](docs/standards/git.md)) |
 | 4b | GitHub → Settings → Actions → General: marcar *Allow GitHub Actions to create and approve pull requests* | O release-please precisa abrir o PR de release |
 | 4c | GitHub → Settings → General → Pull Requests: permitir **apenas squash merge** | Evita entradas duplicadas no CHANGELOG (o merge commit repete o título do PR) |
+| 4d | A cada PR de release: clicar em **Approve and run workflows** antes do merge | O GitHub retém a CI de PRs atualizados pelo bot (ver [git.md](docs/standards/git.md#versionamento--semver)) |
 | 5 | GitHub → Settings → Code security: *Secret scanning*, *Push protection*, *Dependabot alerts*, *Private vulnerability reporting* | Camada extra além do gitleaks |
 | 6 | Se o repositório for de **organização**, criar o secret `GITLEAKS_LICENSE` (gratuita em gitleaks.io) | O job *Secrets* da CI exige a licença nesse caso |
 | 6b | Repositório **privado**: em `scorecard.yml`, `publish_results: false` | A publicação no scorecard.dev só funciona em repos públicos |
