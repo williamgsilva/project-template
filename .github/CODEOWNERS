@@ -3,4 +3,6 @@
 
 # Áreas sensíveis
 /.github/           @{{GITHUB_OWNER}}
+/.claude/           @{{GITHUB_OWNER}}
+/AGENTS.md          @{{GITHUB_OWNER}}
 /docs/architecture/ @{{GITHUB_OWNER}}

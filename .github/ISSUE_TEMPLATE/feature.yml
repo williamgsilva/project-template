@@ -20,7 +20,10 @@ body:
     id: acceptance
     attributes:
       label: Critérios de aceite
-      placeholder: "Dado ... Quando ... Então ..."
+      description: Um comportamento observável e testável por linha (ver docs/prompts/09-spec.md).
+      placeholder: |
+        1. QUANDO <evento> ENTÃO o sistema DEVE <resposta>
+        2. SE <entrada inválida/falha> ENTÃO o sistema DEVE <tratamento>
     validations:
       required: true
   - type: textarea

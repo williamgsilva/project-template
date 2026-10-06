@@ -13,5 +13,6 @@ Me entreviste para levantar os requisitos. Regras:
 - Aponte riscos e premissas que eu não mencionei.
 
 Ao final, preencha as seções 1 a 4 de docs/architecture/overview.md
-e proponha um escopo de MVP priorizado (MoSCoW) com histórias de usuário e critérios de aceite.
+e proponha um escopo de MVP priorizado (MoSCoW) com histórias de usuário e critérios de aceite
+no formato "QUANDO <evento> ENTÃO o sistema DEVE <resposta>" (ver docs/prompts/09-spec.md).
 ```

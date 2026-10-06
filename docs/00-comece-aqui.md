@@ -69,7 +69,9 @@ Critérios para escolher tecnologia (em ordem):
 Padrão recomendado de arquitetura para começar: **monólito modular** com
 **arquitetura hexagonal (ports & adapters)** — veja
 [ADR 0002](architecture/adr/0002-monolito-modular-hexagonal.md). Microsserviços só
-quando houver dor real (escala independente, times independentes).
+quando houver dor real (escala independente, times independentes). Catálogo de estilos,
+critérios de escolha e como cada linguagem implementa os mesmos conceitos:
+[standards/arquitetura.md](standards/arquitetura.md).
 
 **Saída:** ADRs aceitos + branch `lang/<stack>` (se ainda não existir).
 
@@ -82,7 +84,7 @@ Este template já entrega a parte genérica; na branch da linguagem complete:
 
 - [ ] `make setup/lint/format/test/build/run` implementados para a stack
 - [ ] Formatter + linter + type checker configurados (falham a CI)
-- [ ] Framework de testes + cobertura mínima configurada (ex.: 80% no domínio)
+- [ ] Framework de testes + cobertura mínima configurada (meta em [testes.md](standards/testes.md#cobertura))
 - [ ] Dependências **com lockfile** e versões fixas
 - [ ] Dockerfile multi-stage, usuário não-root, imagem mínima (distroless/alpine/chainguard)
 - [ ] Configuração via variáveis de ambiente (12-factor), `.env.example` atualizado
@@ -112,16 +114,12 @@ Padrões a seguir: [standards/](standards/).
 
 ## Fase 5 — Iteração contínua
 
-Ciclo por feature:
+Siga o fluxo de trabalho e a *Definition of Done* do [CONTRIBUTING.md](../CONTRIBUTING.md)
+(fonte única). Em resumo: issue → `/planejar` ou `/spec` → teste → código → `make check` →
+`/verificar` → `/revisar` → PR pequeno → merge → deploy ([operations/](operations/)).
 
-```text
-issue → branch curta → teste (falhando) → código → refatora → PR pequeno → review → merge → deploy
-```
-
-- PRs pequenos (< 400 linhas alteradas) e focados.
-- Revisão com [prompts/04-review.md](prompts/04-review.md) **antes** do review humano.
-- Decisões novas → novo ADR. Mudanças → `CHANGELOG.md`.
-- Revisite NFRs a cada release (performance, custos, segurança).
+- Decisões novas → ADR (`/adr`). Termos novos → [glossario.md](glossario.md).
+- Revisite os requisitos não funcionais a cada release (performance, custos, segurança).
 
 ---
 
@@ -131,9 +129,21 @@ issue → branch curta → teste (falhando) → código → refatora → PR pequ
    pela maioria dos agentes (Claude Code lê `CLAUDE.md`, que aponta para ele).
    Mantenha-o curto e atualizado — ele é o "contrato" com a IA.
 2. **Planejar antes de codar:** peça plano → revise → só então implemente.
+   A escolha do estilo de arquitetura está em [standards/arquitetura.md](standards/arquitetura.md).
 3. **Tarefas pequenas e verificáveis:** "implemente X com testes; rode `make check`".
-4. **Nunca aceite sem entender:** peça explicações; você é o responsável pelo código.
-5. **Prompts reutilizáveis** ficam em [prompts/](prompts/) — melhore-os com o tempo.
+4. **Verifique executando:** testes passando não bastam; rode o fluxo ([prompts/07-verificar.md](prompts/07-verificar.md)).
+5. **Nunca aceite sem entender:** peça explicações; você é o responsável pelo código.
+6. **Aprendendo?** Ative o output style *Learning* (`/config`) ou use
+   [prompts/08-estudo.md](prompts/08-estudo.md): a IA explica e você escreve as decisões de design.
+7. **Prompts, skills e plugins** estão catalogados em [prompts/README.md](prompts/README.md)
+   (fonte única), com quando usar cada um e as fontes para estudar.
+8. **Regra crítica vira bloqueio, não pedido:** o que não pode acontecer (ler `.env`, push
+   forçado) fica em `.claude/settings.json` ou em hooks; o `AGENTS.md` só orienta.
+9. **Autonomia com limites:** loops autônomos só com critério de pronto, limite de iterações
+   e branch isolada ([prompts/10-loop-autonomo.md](prompts/10-loop-autonomo.md)); para rodar
+   sem supervisão, use um container isolado (devcontainer com firewall).
+10. **Você continua sendo o sênior:** a IA gera código; julgamento, formulação do problema e
+    revisão crítica do que ela produz são seu trabalho.
 
 ## Fontes para estudo contínuo
 
@@ -147,3 +157,7 @@ issue → branch curta → teste (falhando) → código → refatora → PR pequ
 | Entrega        | *Accelerate* (DORA), [trunkbaseddevelopment.com](https://trunkbaseddevelopment.com) |
 | APIs           | [Google API Design Guide](https://cloud.google.com/apis/design), RFC 9457 (Problem Details) |
 | Observabilidade| [opentelemetry.io](https://opentelemetry.io/docs/)                     |
+| System design  | [System Design Primer](https://github.com/donnemartin/system-design-primer), *Designing Data-Intensive Applications* (Kleppmann) |
+| Code review    | [Google Code Review Guide](https://google.github.io/eng-practices/review/), [Conventional Comments](https://conventionalcomments.org/) |
+| IA aplicada    | [Building effective agents](https://www.anthropic.com/research/building-effective-agents), livro aberto do [prompts.chat](https://prompts.chat) |
+| Trilha sênior  | [bmadone/senior-software-engineer](https://github.com/bmadone/senior-software-engineer) — links curados por tema (arquitetura, qualidade, CI/CD, segurança, soft skills, IA) |

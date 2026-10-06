@@ -11,7 +11,7 @@
 ### Proteção da `main` (configurar no GitHub)
 
 - Require pull request + 1 aprovação (+ Code Owners)
-- Require status checks: `Lint`, `Test`, `Build`, `Secrets`, `trivy`
+- Require status checks (nomes dos jobs): `Lint`, `Test`, `Build`, `Secrets`, `Vulnerabilities`, `Workflows`
 - Require linear history · Block force pushes · Require conversation resolution
 - Habilitar: *Secret scanning*, *Push protection*, *Dependabot alerts*, *Private vulnerability reporting*
 
@@ -42,12 +42,27 @@ Validado automaticamente pelo hook `commit-msg` (pre-commit).
 
 ## Versionamento — [SemVer](https://semver.org/lang/pt-BR/)
 
-`MAJOR.MINOR.PATCH`. Tags `vX.Y.Z` na `main`. A versão e o CHANGELOG podem ser
-automatizados com [release-please](https://github.com/googleapis/release-please)
-ou [semantic-release](https://semantic-release.gitbook.io) a partir dos commits.
+`MAJOR.MINOR.PATCH`. Tags `vX.Y.Z` na `main`. A versão, o `CHANGELOG.md` e a tag são
+**automatizados** pelo [release-please](https://github.com/googleapis/release-please)
+(`.github/workflows/release.yml`): ele lê os Conventional Commits e mantém um PR de release
+aberto; ao fazer merge desse PR, a versão é publicada com SBOM assinado.
+**Não edite o CHANGELOG à mão** — escreva bons commits.
 
 ## Template e branches de linguagem
 
 - `main` (template genérico) → `lang/<stack>` (herda via merge).
 - Melhoria genérica: PR na `main`, depois `git checkout lang/x && git merge main`.
 - Melhoria específica da stack: PR direto na `lang/<stack>`.
+
+## Feature flags
+
+Permitem integrar código incompleto na `main` (trunk-based) e separar **deploy** de **release**.
+
+- **Tipos:** *release* (esconder feature em construção — vida curta), *experimento* (A/B),
+  *operacional* (kill switch para desligar algo pesado em incidente — vida longa).
+- **Padrão desligado** em produção; o código precisa funcionar com a flag ligada **e** desligada
+  (teste os dois caminhos).
+- **Toda flag de release tem dono e data de remoção**; ao ligar 100%, abra a issue para remover
+  a flag e o código morto. Flags esquecidas viram dívida técnica e risco.
+- Comece simples (configuração/variável de ambiente); use um serviço (Unleash, Flagsmith,
+  OpenFeature como padrão aberto) quando precisar ligar por usuário ou percentual.
