@@ -5,6 +5,8 @@
 
 ## Contexto
 
+Alternativas e critérios de escolha: [docs/standards/arquitetura.md](../../standards/arquitetura.md).
+
 Precisamos de uma estrutura que seja simples para começar, fácil de testar, que isole
 regras de negócio de frameworks e infraestrutura, e que permita evoluir (inclusive
 extrair serviços) sem reescrita.

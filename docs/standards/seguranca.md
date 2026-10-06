@@ -12,6 +12,11 @@ Referências: [OWASP Top 10](https://owasp.org/Top10/),
   (GitHub Actions Secrets/OIDC, AWS Secrets Manager, GCP Secret Manager, Vault/OpenBao, Infisical, SOPS).
 - Detecção: `gitleaks` no pre-commit e na CI + *push protection* do GitHub.
 - Vazou? **Revogue/rotacione imediatamente** — apagar do histórico não basta.
+- **Agentes de IA:** o `.claude/settings.json` bloqueia a leitura de `.env*`/`secrets/` pelas
+  ferramentas Read/Edit, e o hook `.claude/hooks/protect-secrets.sh` bloqueia comandos de shell
+  que citam esses arquivos (as regras Read/Edit **não** se aplicam ao Bash). O sandbox do
+  Claude Code (bubblewrap + socat no Linux) adiciona uma terceira camada. Ainda assim, o mais
+  seguro é **não ter segredos de produção na máquina de desenvolvimento**.
 
 ## 2. Entrada e saída
 
@@ -47,11 +52,13 @@ Referências: [OWASP Top 10](https://owasp.org/Top10/),
 ## 6. Cadeia de suprimentos (supply chain)
 
 - Lockfile obrigatório; versões fixadas; atualizações via Dependabot/Renovate.
+- **Licenças:** o trivy (`make security` e CI) falha em licenças restritivas (ex.: GPL/AGPL)
+  em dependências. Se o projeto aceitar alguma, registre a exceção num ADR.
 - Scanner de vulnerabilidades em deps e imagens (`trivy`) na CI, com *gate* em HIGH/CRITICAL.
 - Gerar **SBOM** (`trivy fs --format cyclonedx` ou `syft`) em cada release.
 - Assinar imagens/artefatos ([cosign/Sigstore](https://www.sigstore.dev)) e gerar *provenance* (SLSA).
 - GitHub Actions: `permissions` mínimas, `persist-credentials: false`, actions de fontes confiáveis
-  (considere fixar por SHA em projetos críticos), OIDC em vez de chaves de nuvem longas.
+  **fixadas por SHA** (tags são mutáveis — ver o incidente `tj-actions/changed-files`, 2025), OIDC em vez de chaves de nuvem longas.
 
 ## 7. Containers
 
@@ -73,3 +80,29 @@ Referências: [OWASP Top 10](https://owasp.org/Top10/),
 
 Processo em [SECURITY.md](../../SECURITY.md). Mantenha logs de auditoria
 (quem, o quê, quando) para ações sensíveis.
+
+## 10. Aplicações e agentes de IA
+
+Referência: [OWASP Top 10 para aplicações LLM](https://genai.owasp.org/llm-top-10/).
+
+**Ao construir features com LLM:**
+
+- **Prompt injection** (direta e indireta): todo texto vindo de usuário, documento, página web
+  ou ferramenta é **dado, não instrução**. Separe instruções de conteúdo e nunca dê ao modelo
+  permissões que o usuário não teria.
+- **Agência excessiva:** ferramentas do modelo com menor privilégio, escopo e limite de
+  execuções; ações irreversíveis (pagamento, exclusão, e-mail) exigem confirmação humana.
+- **Saída do modelo é entrada não confiável:** valide/escape antes de usar em SQL, shell, HTML
+  ou chamadas de API.
+- **Vazamento de dados:** não envie segredos ou PII desnecessária ao modelo; verifique a política
+  de retenção do fornecedor; mascare dados sensíveis nos logs de prompts.
+- **Custos e abuso:** rate limit e limite de tokens por usuário.
+
+**Ao usar agentes de código neste repositório:**
+
+- Servidores **MCP** só de fontes confiáveis, com o menor escopo possível; revise `.mcp.json` em PR
+  como código (ele pode executar programas e acessar dados).
+- Conteúdo de issues, PRs, páginas web e dependências pode conter instruções maliciosas:
+  o agente deve tratá-lo como dado (regra no `AGENTS.md`).
+- Loops autônomos só com limites ([10-loop-autonomo.md](../prompts/10-loop-autonomo.md)).
+- Modelagem de ameaças para features sensíveis: [threat-model.md](../security/threat-model.md).

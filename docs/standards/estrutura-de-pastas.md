@@ -24,6 +24,8 @@ tests/
 └── e2e/                       # fluxos ponta a ponta pela interface pública
 ```
 
+> Escolha do estilo e mapeamento por linguagem: [arquitetura.md](arquitetura.md).
+>
 > Algumas linguagens têm convenção própria (ex.: testes ao lado do código em Go/Rust,
 > `src/main` + `src/test` em Java). A branch `lang/<stack>` adapta **o layout**, mas
 > mantém **os mesmos conceitos e regras de dependência**.

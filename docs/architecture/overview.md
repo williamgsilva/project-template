@@ -26,7 +26,7 @@
 | Segurança       | ex.: OWASP ASVS nível 2                 | checklist + scanners   |
 | Escalabilidade  | ex.: 10k usuários ativos                | teste de carga         |
 | Custo           | ex.: < US$ 50/mês em produção           | billing                |
-| Manutenibilidade| ex.: cobertura ≥ 80% no domínio         | CI                     |
+| Manutenibilidade| ex.: cobertura ≥ 80% em domain e application ([testes.md](../standards/testes.md#cobertura)) | CI |
 | Privacidade     | ex.: conformidade LGPD                  | revisão de dados       |
 
 ## 4. Restrições
