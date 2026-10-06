@@ -48,6 +48,10 @@ Validado automaticamente pelo hook `commit-msg` (pre-commit).
 aberto; ao fazer merge desse PR, a versão é publicada com SBOM assinado.
 **Não edite o CHANGELOG à mão** — escreva bons commits.
 
+> Use **apenas squash merge** (Settings → General → Pull Requests: desmarque *merge commits* e
+> *rebase merging*). Com merge commit, a mensagem do merge repete o título do PR e o
+> release-please conta a mesma mudança duas vezes no CHANGELOG.
+
 ## Template e branches de linguagem
 
 - `main` (template genérico) → `lang/<stack>` (herda via merge).
