@@ -5,7 +5,6 @@
 
 ### Features
 
-* arquitetura, segurança da IA, release automatizado e operação ([bc50dd9](https://github.com/williamgsilva/project-template/commit/bc50dd9ff7cc3c41c84c41fb381cd9eb330851b1))
 * arquitetura, segurança da IA, release automatizado e operação ([be956e8](https://github.com/williamgsilva/project-template/commit/be956e8c00f067305cbd99aea07a4d3785f64f51))
 * template base agnóstico de linguagem ([9359473](https://github.com/williamgsilva/project-template/commit/9359473924254230dcd8f30f1470bd2234c8c61b))
 
