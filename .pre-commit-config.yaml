@@ -45,6 +45,8 @@ repos:
     rev: v0.49.1
     hooks:
       - id: markdownlint
+        # CHANGELOG.md é gerado pelo release-please (formato próprio, não editar à mão)
+        exclude: ^CHANGELOG\.md$
 
   # Shell scripts
   - repo: https://github.com/shellcheck-py/shellcheck-py

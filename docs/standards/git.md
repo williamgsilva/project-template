@@ -42,11 +42,22 @@ Validado automaticamente pelo hook `commit-msg` (pre-commit).
 
 ## Versionamento — [SemVer](https://semver.org/lang/pt-BR/)
 
-`MAJOR.MINOR.PATCH`. Tags `vX.Y.Z` na `main`. A versão, o `CHANGELOG.md` e a tag são
+`MAJOR.MINOR.PATCH`. Tags `vX.Y.Z` na `main`.
+
+- **Fase 0.x (padrão inicial):** o projeto começa em `0.1.0` e, enquanto estiver abaixo de
+  `1.0.0`, `feat` sobe o MINOR e quebras de compatibilidade (`feat!`) também sobem só o MINOR
+  (`bump-minor-pre-major` em `release-please-config.json`). Isso comunica "ainda em evolução".
+- **Ir para 1.0.0:** quando a API/uso estiver estável, faça um commit com o rodapé
+  `Release-As: 1.0.0` (ou um `feat!`/`BREAKING CHANGE` depois de remover `bump-minor-pre-major`).
+ A versão, o `CHANGELOG.md` e a tag são
 **automatizados** pelo [release-please](https://github.com/googleapis/release-please)
 (`.github/workflows/release.yml`): ele lê os Conventional Commits e mantém um PR de release
 aberto; ao fazer merge desse PR, a versão é publicada com SBOM assinado.
 **Não edite o CHANGELOG à mão** — escreva bons commits.
+
+> Use **apenas squash merge** (Settings → General → Pull Requests: desmarque *merge commits* e
+> *rebase merging*). Com merge commit, a mensagem do merge repete o título do PR e o
+> release-please conta a mesma mudança duas vezes no CHANGELOG.
 
 ## Template e branches de linguagem
 
