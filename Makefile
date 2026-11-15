@@ -49,8 +49,15 @@ test: ## Executa testes com cobertura
 security: ## Segredos (histórico git), vulnerabilidades, misconfig e licenças (falha se encontrar algo)
 	@if command -v gitleaks >/dev/null; then gitleaks git --redact .; \
 		else $(MAKE) -s _skip MSG="varredura de segredos (gitleaks não instalado)"; fi
+	@# Varre só o que vai para o git (versionado + novo não ignorado): fora .venv, .env e afins.
+	@# A base do trivy é pública: config Docker vazia evita ler (ou exigir) credenciais.
 	@if command -v trivy >/dev/null; then \
-		trivy fs --scanners vuln,secret,misconfig,license --severity HIGH,CRITICAL --exit-code 1 .; \
+		tmp=$$(mktemp -d); trap 'rm -rf "$$tmp"' EXIT; mkdir "$$tmp/src" "$$tmp/docker"; \
+		git ls-files -z --cached --others --exclude-standard | \
+			while IFS= read -r -d '' f; do [ -f "$$f" ] && printf '%s\0' "$$f"; done | \
+			tar --null -T - -cf - | tar -xf - -C "$$tmp/src"; \
+		DOCKER_CONFIG="$$tmp/docker" trivy fs --no-progress --skip-version-check --disable-telemetry \
+			--scanners vuln,secret,misconfig,license --severity HIGH,CRITICAL --exit-code 1 "$$tmp/src"; \
 		else $(MAKE) -s _skip MSG="varredura de vulnerabilidades (trivy não instalado)"; fi
 
 _skip:

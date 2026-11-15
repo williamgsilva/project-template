@@ -128,7 +128,15 @@
     "autoAllowBashIfSandboxed": true,
     "failIfUnavailable": true,
     "allowUnsandboxedCommands": false,
+    "network": {
+      "allowedDomains": [
+        "mirror.gcr.io"
+      ]
+    },
     "filesystem": {
+      "allowWrite": [
+        "~/.cache/trivy"
+      ],
       "denyRead": [
         "~/.ssh",
         "~/.aws",
