@@ -134,13 +134,15 @@
         "files.pythonhosted.org",
         "github.com",
         "objects.githubusercontent.com",
-        "release-assets.githubusercontent.com"
+        "release-assets.githubusercontent.com",
+        "mirror.gcr.io"
       ]
     },
     "filesystem": {
       "allowWrite": [
         "~/.cache/uv",
-        "~/.local/share/uv"
+        "~/.local/share/uv",
+        "~/.cache/trivy"
       ],
       "denyRead": [
         "~/.ssh",
