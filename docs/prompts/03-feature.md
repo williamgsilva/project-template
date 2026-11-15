@@ -11,7 +11,8 @@ Plano aprovado. Implemente em pequenos passos:
 2. Caso de uso + testes com fakes das portas.
 3. Adaptadores + testes de integração.
 4. Interface de entrada + teste e2e do fluxo.
-Ao final rode `make check` e corrija tudo. Atualize docs/OpenAPI/glossário se aplicável
+Ao final rode `make check` e corrija o que a SUA mudança quebrou. Falha que já existia antes:
+reporte, não corrija. Nunca apague, pule ou enfraqueça testes para passar. Atualize docs/OpenAPI/glossário se aplicável
 (o CHANGELOG é gerado pelo release-please a partir dos commits).
 Resuma o que mudou e sugira a mensagem de commit (Conventional Commits).
 ```

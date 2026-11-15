@@ -60,7 +60,8 @@ FASE 3 — tasks.md (só depois de aprovar a fase 2)
 
 EXECUÇÃO (quando eu pedir "executar tarefa N")
 - Releia requirements.md, design.md e tasks.md antes de começar.
-- Faça somente a tarefa pedida, rode `make check`, marque [x] em tasks.md e pare.
+- Faça somente a tarefa pedida, rode `make check-rapido`, marque [x] em tasks.md e pare.
+- Na última tarefa (ou antes do PR), rode `make check` completo.
 ```
 
 > No Claude Code: `/spec <feature>` e `/spec executar <feature> <tarefa>`.

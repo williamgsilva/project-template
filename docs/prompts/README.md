@@ -15,6 +15,8 @@ qualquer assistente (Claude Code, Copilot Chat, Cursor…). Melhore-os conforme 
 | [08-estudo.md](08-estudo.md) | Aprendizado | A IA ensina e você implementa as decisões de design |
 | [09-spec.md](09-spec.md) | Especificação | Feature média/grande: requisitos → design → tarefas, com aprovação a cada fase |
 | [10-loop-autonomo.md](10-loop-autonomo.md) | Automação | Loop autônomo com limites rígidos de iterações e escopo |
+| [11-avaliar-externo.md](11-avaliar-externo.md) | Segurança | Avaliar repositório, skill, plugin ou MCP de terceiros antes de adotar |
+| [12-briefing.md](12-briefing.md) | Comunicação | Transformar seus planos em documento de trabalho em `docs/planos/` |
 
 Fluxo sugerido por tarefa:
 
@@ -36,18 +38,65 @@ Cada skill apenas aponta para o prompt correspondente, que continua sendo a font
 | `/adr <decisão>` | 02-arquitetura | Cria o ADR numerado |
 | `/loop-seguro <tarefa> [--max N]` | 10-loop-autonomo | Padrão 10, teto 25 iterações |
 | `/estudar <tema>` | 08-estudo | Você escreve as decisões de design |
+| `/avaliar-externo <url> [uso]` | 11-avaliar-externo | Somente leitura; veredito antes de instalar qualquer coisa de fora |
+| `/briefing <tema> [despejo]` | 12-briefing | Perguntas numeradas; grava em `docs/planos/` após seu ok |
+
+### Skills de terceiros
+
+Copiadas **fixadas por SHA**, com licença, depois de passar por `/avaliar-externo`. Não edite
+estes arquivos: para atualizar, avalie o diff entre os SHAs e copie a pasta inteira de novo.
+
+| Skill | Origem (SHA) | Licença | Avaliada em | Para quê |
+| ----- | ------------ | ------- | ----------- | -------- |
+| `discernment-nudge` | [anthropics/skills@1780c5e](https://github.com/anthropics/skills/tree/1780c5e5a552fd4d1c9d6a7b0cab26b0c2bef064/skills/discernment-nudge) | Apache-2.0 | 2026-11-14 | Depois de recomendações, planos e estimativas, fecha com 2–3 perguntas para checar fatos e premissas (no máximo uma vez por conversa). Só texto, sem scripts |
+
+Avaliadas e **não** adotadas: `doc-coauthoring` (sem arquivo de licença; usa subagentes e se
+sobrepõe a `/spec` e `/briefing` — a parte útil, perguntas numeradas com resposta curta, foi
+incorporada ao 12-briefing).
 
 ### Proteções determinísticas (`.claude/`)
 
 | Camada | O que faz | Limitação |
 | ------ | --------- | --------- |
-| `permissions.deny` em [settings.json](../../.claude/settings.json) | Bloqueia as ferramentas Read/Edit em `.env*`, `secrets/`, `*.pem`/`*.key`; bloqueia `git push --force` e `sudo`; desativa `--dangerously-skip-permissions` | Regras Read/Edit **não** valem para o Bash; regras com pipe não funcionam (cada parte do comando é avaliada separadamente) |
-| `permissions.ask` | Pede confirmação para `curl`, `wget`, `git push`, `git reset --hard`, `rm -r(f)`, `docker`, `kubectl`, `terraform` e edições em `.github/` e `.claude/` | Mais confirmações durante o trabalho |
-| Hook [protect-secrets.sh](../../.claude/hooks/protect-secrets.sh) (PreToolUse) | Bloqueia comandos de shell que citam `.env*`, `secrets/` ou chaves (`cat .env`, `source .env`…) | Baseado em texto; um comando ofuscado de propósito pode escapar |
-| Hook [format.sh](../../.claude/hooks/format.sh) (PostToolUse) | Roda `make format` após cada edição da IA | Inativo até a stack implementar `make format` |
-| Sandbox (`sandbox.enabled`) | Isola os comandos do Bash (arquivos e rede); aplica as regras de leitura também no shell | No Linux exige `bubblewrap` e `socat`; sem eles, só um aviso e os comandos rodam fora do sandbox |
+| `permissions.deny` em [settings.json](../../.claude/settings.json) | Bloqueia leitura/edição de `.env*`, `secrets/`, chaves e das credenciais da pasta pessoal (`~/.ssh`, `~/.aws`, `~/.config/gh`…); bloqueia `git push --force`, `git commit --no-verify` e `sudo`; desativa `--dangerously-skip-permissions` | As regras Read/Edit valem para as ferramentas e para `cat`/`head`/`tail`/`sed`/`tee` e redirecionamentos no Bash, mas **não** para `grep -r .` nem para scripts que abrem arquivos sozinhos |
+| `permissions.ask` | Pede confirmação para rede (`curl`, `wget`), `git push`, comandos git destrutivos (`reset --hard`, `clean`, `rebase`, `stash drop/clear`, `branch -D`, `switch -f`), `rm -r(f)`, `docker`, `kubectl`, `terraform`, `make build`/`clean` e edições em `.github/`, `.claude/` e `Makefile` | Mais confirmações durante o trabalho |
+| `permissions.allow` | Libera sem perguntar: alvos do `make` (exatos), git do dia a dia, leitura e manipulação de arquivos. **Nenhum interpretador** (`python3`, `node`, `npx`, `npm run`): eles executam código arbitrário | Só vale depois de você confiar na pasta (*workspace trust*) |
+| Hook [protect-secrets.sh](../../.claude/hooks/protect-secrets.sh) (PreToolUse) | Bloqueia comandos de shell que citam `.env` (inclusive entre aspas e com glob), `secrets/`, arquivos de chave e credenciais da pasta pessoal. Testado por `scripts/test-hooks.sh` (roda no `make lint`) | Baseado em texto: código que monta o caminho em tempo de execução escapa |
+| Hook [format.sh](../../.claude/hooks/format.sh) (PostToolUse) | Formata só o arquivo editado (`make format FILES=...`) | Inativo até a stack implementar `make format` |
+| Sandbox | Isola o Bash (arquivos e rede); nega leitura das pastas de credenciais; **não inicia sem `bubblewrap`/`socat`** (`failIfUnavailable`) e **não permite sair do sandbox** (`allowUnsandboxedCommands: false`) | Lê o resto da pasta pessoal (necessário para git, pre-commit e toolchains) |
 
-Ajustes pessoais (sem afetar o time) vão em `.claude/settings.local.json`, ignorado pelo git.
+### Como flexibilizar sem enfraquecer o time
+
+Regras de listas (`allow`, `ask`, `deny`) **se somam** entre arquivos, e a ordem de avaliação é
+sempre deny → ask → allow ([documentação](https://code.claude.com/docs/en/permissions.md)). Por isso:
+
+| Quero… | Onde | Como |
+| ------ | ---- | ---- |
+| Liberar um comando só para mim | `.claude/settings.local.json` (fora do git) | `"allow": ["Bash(npm test)"]` — funciona para o que **não** está em `ask`/`deny` do projeto |
+| Liberar algo que está em `ask` | Não dá pelo arquivo local: `ask` do projeto vence `allow` local | Aprove na hora, ou proponha tirar do `ask` do projeto num PR |
+| Liberar comandos da stack | `.claude/settings.json` da branch `lang/<stack>` | Comandos **exatos**: `Bash(npm test)`, `Bash(npm run lint)`, `Bash(pytest)` — nunca `Bash(npx *)` ou `Bash(python3 *)` |
+| Uma sessão mais solta, só agora | Linha de comando | `claude --settings '{"permissions":{"allow":["Bash(npm run dev)"]}}'` (vale só nessa sessão) |
+| Ferramenta que precisa ler algo de `~` bloqueado | `.claude/settings.local.json` | Avalie primeiro: as pastas negadas guardam credenciais. Prefira dar ao projeto um token próprio e de escopo mínimo |
+| `make check` exigente (ex.: na CI ou antes do release) | Comando | `STRICT=1 make check` falha se alguma etapa não rodou |
+
+## Economia de tokens no dia a dia
+
+Ordenado do maior para o menor ganho:
+
+1. **Uma conversa por assunto.** Use `/clear` ao trocar de tarefa: o histórico inteiro é
+   reenviado a cada mensagem, então uma conversa longa encarece todas as respostas seguintes.
+   Em conversas longas no mesmo assunto, `/compact` resume o histórico.
+2. **Modelo e esforço sob medida.** `/model` e `/effort`: tarefa mecânica (renomear, ajustar
+   texto, rodar comandos) vai bem com esforço baixo ou um modelo menor; deixe o modelo e o
+   esforço altos para planejar, depurar e decidir.
+3. **Contexto pronto em arquivo.** Planos em `docs/planos/`, decisões em ADR: diga "leia
+   docs/planos/X.md" em vez de reexplicar a cada conversa.
+4. **Pedidos fechados.** "Faça X no arquivo Y, critério Z" gasta menos que "melhore o projeto".
+   Plano antes (`/planejar`) só quando a tarefa é grande.
+5. **Sem releitura e sem saída enorme.** As regras de "Economia de contexto" do AGENTS.md já
+   cobrem isso; `make check-rapido` em vez de `make check` durante iterações.
+6. **Subagentes e reviews multiagente só quando valem a pena:** cada um recomeça do zero e
+   multiplica o consumo.
 
 ## Boas práticas de prompt
 
@@ -96,7 +145,14 @@ Instale com `/plugin` (marketplace oficial) e use conforme a necessidade:
 | `security-guidance` | Hook que alerta padrões perigosos (injeção de comando, XSS, eval, desserialização) durante a edição |
 | `commit-commands` | `/commit`, `/commit-push-pr`, `/clean_gone` |
 | `hookify` | Transforma "nunca faça X" em hook que bloqueia de verdade |
-| `ralph-wiggum` | Loop autônomo — **somente** com `--max-iterations` (ver 10-loop-autonomo.md) |
+| `ralph-loop` (antigo `ralph-wiggum`) | Loop autônomo — **somente** com `--max-iterations` (ver 10-loop-autonomo.md) |
+| `claude-md-management` | Audita o CLAUDE.md/AGENTS.md e registra aprendizados da sessão (`/revise-claude-md`) |
+| `claude-code-setup` | Analisa o código e recomenda hooks, skills, MCPs e subagentes sob medida — útil logo após escolher a stack |
+| `claude-security` | Varredura profunda de vulnerabilidades com verificação de cada achado; para releases ou mudanças sensíveis (custa mais que `/security-review`) |
+
+Marketplace oficial: [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official).
+Plugin pode trazer hooks e scripts que **executam código**: mesmo os oficiais passam por
+`/avaliar-externo` antes de instalar, e nenhum fica habilitado por padrão no `settings.json`.
 
 > Regra geral: o que **não pode** falhar vira hook ou permissão em `.claude/settings.json`;
 > instrução em prompt é orientação, não garantia.

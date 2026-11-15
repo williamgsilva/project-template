@@ -39,9 +39,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # Um único scan: gera o SARIF e falha em HIGH/CRITICAL (vulnerabilidade, segredo,
-      # configuração insegura ou licença restritiva, ex.: GPL/AGPL em dependência).
-      - name: Trivy
+      # Um único scan que falha em HIGH/CRITICAL (vulnerabilidade, segredo, configuração insegura
+      # ou licença restritiva, ex.: GPL/AGPL em dependência). Onde o resultado aparece depende da
+      # variável do repositório CODE_SCANNING (Settings → Secrets and variables → Actions → Variables):
+      #   "true"  → SARIF na aba Security. Grátis em repo público; em repo PRIVADO exige licença
+      #             paga do GitHub Code Security (sem ela o upload falha e trava o merge).
+      #   ausente → tabela no log do job (qualquer repo, sem custo).
+      - name: Trivy (SARIF para a aba Security)
+        if: vars.CODE_SCANNING == 'true'
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: fs
@@ -51,8 +56,18 @@ jobs:
           format: sarif
           output: trivy.sarif
           exit-code: "1"
+      - name: Trivy (tabela no log)
+        if: vars.CODE_SCANNING != 'true'
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scanners: vuln,secret,misconfig,license
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          format: table
+          exit-code: "1"
       - uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
-        if: always()
+        if: always() && vars.CODE_SCANNING == 'true'
         with:
           sarif_file: trivy.sarif
 
