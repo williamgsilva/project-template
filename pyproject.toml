@@ -1,0 +1,101 @@
+[project]
+name = "app"
+version = "0.1.0"
+description = "{{ONE_LINE_DESCRIPTION}}"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[project.scripts]
+app = "app.bootstrap.app:main"
+
+[dependency-groups]
+dev = [
+    "import-linter>=2.16",
+    "mypy>=2.4",
+    "pytest>=9.2",
+    "pytest-cov>=7.1",
+    "ruff>=0.17",
+]
+
+[build-system]
+requires = ["uv_build>=0.12,<0.13"]
+build-backend = "uv_build"
+
+# O pacote importável é sempre "app" (src/app/), qualquer que seja o nome do projeto.
+[tool.uv.build-backend]
+module-name = "app"
+
+# Mesma regra do Dependabot: só aceita versões publicadas há pelo menos 7 dias
+# (reduz o risco de adotar uma versão maliciosa recém-publicada).
+[tool.uv]
+exclude-newer = "7 days"
+# Cache do uv e projeto podem estar em discos diferentes (hardlink falha): copia direto.
+link-mode = "copy"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+src = ["src", "tests"]
+extend-exclude = [".claude"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # isort
+    "B",        # bugbear
+    "UP",       # pyupgrade
+    "SIM",      # simplificações
+    "S",        # bandit (segurança)
+    "BLE",      # except Exception genérico
+    "TRY",      # boas práticas de exceção
+    "N",        # nomes
+    "RUF",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]  # assert é o normal em teste
+
+[tool.mypy]
+strict = true
+mypy_path = "src"
+files = ["src", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--import-mode=importlib",
+    "--cov=app",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-fail-under=80",
+]
+
+[tool.coverage.run]
+branch = true
+# Só repassa para main(); coberto pelo teste e2e, que roda em outro processo.
+omit = ["src/app/__main__.py"]
+
+# Regras de dependência entre camadas (docs/standards/estrutura-de-pastas.md).
+# Cada módulo novo em src/app/modules/ entra em "containers".
+[tool.importlinter]
+root_package = "app"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Camadas: interfaces -> application -> domain <- infrastructure"
+type = "layers"
+containers = ["app.modules.example"]
+layers = [
+    "interfaces | infrastructure",
+    "application",
+    "domain",
+]
+
+[[tool.importlinter.contracts]]
+name = "domain não importa bibliotecas de I/O"
+type = "forbidden"
+source_modules = ["app.modules.*.domain"]
+forbidden_modules = ["app.bootstrap", "http", "urllib", "socket", "sqlite3", "subprocess"]

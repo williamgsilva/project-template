@@ -128,7 +128,20 @@
     "autoAllowBashIfSandboxed": true,
     "failIfUnavailable": true,
     "allowUnsandboxedCommands": false,
+    "network": {
+      "allowedDomains": [
+        "pypi.org",
+        "files.pythonhosted.org",
+        "github.com",
+        "objects.githubusercontent.com",
+        "release-assets.githubusercontent.com"
+      ]
+    },
     "filesystem": {
+      "allowWrite": [
+        "~/.cache/uv",
+        "~/.local/share/uv"
+      ],
       "denyRead": [
         "~/.ssh",
         "~/.aws",

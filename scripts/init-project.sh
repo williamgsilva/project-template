@@ -54,6 +54,13 @@ done < <(find . -type f -not -path './.git/*' -not -name 'init-project.sh' -prin
 sed_inplace README.md '/<!-- template:start -->/,/<!-- template:end -->/d'
 sed_inplace README.md -e '/./,/^$/!d'
 
+# Stack Python (branch lang/python): o nome da distribuição passa a ser o slug;
+# o pacote importável continua "app" (src/app/). Regera o lock para o novo nome.
+if [[ -f pyproject.toml ]]; then
+  sed_inplace pyproject.toml -e "s|^name = \"app\"|name = \"$(escape "$PROJECT_SLUG")\"|"
+  if command -v uv >/dev/null; then uv lock --quiet; else echo "AVISO: instale o uv e rode 'uv lock'."; fi
+fi
+
 echo
 echo "Placeholders substituídos."
 if grep -rIn --exclude-dir=.git --exclude=init-project.sh -E '\{\{[A-Z_]+\}\}' .; then

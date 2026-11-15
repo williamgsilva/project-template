@@ -1,7 +1,20 @@
 # Atualizações automáticas de dependências.
-# TODO(lang): adicionar o ecossistema da stack (pip, npm, gomod, maven, gradle, nuget, cargo…).
 version: 2
 updates:
+  # Dependências Python (pyproject.toml + uv.lock)
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      python-dev:
+        dependency-type: development
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+
+
   - package-ecosystem: github-actions
     directory: /
     schedule:

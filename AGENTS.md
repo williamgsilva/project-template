@@ -7,7 +7,7 @@ Copilot, Cursor, Codex…). Mantenha-o **curto, objetivo e atualizado**.
 
 - **Nome:** {{PROJECT_NAME}}
 - **Objetivo:** {{ONE_LINE_DESCRIPTION}}
-- **Stack:** {{STACK}} <!-- preenchido na branch lang/<stack> -->
+- **Stack:** Python 3.13 (uv, ruff, mypy, pytest, import-linter) — pacote em `src/app/`
 - **Arquitetura:** monólito modular, hexagonal (ports & adapters). Ver `docs/architecture/`.
 
 ## Comandos

@@ -22,7 +22,13 @@ define skipped
 endef
 todo = $(call skipped,$(1) — alvo TODO(lang) ainda não implementado)
 
-.PHONY: help setup lint format test security sbom build _build-todo run check check-rapido clean
+# --- Stack Python (uv). --locked: falha se o uv.lock estiver desatualizado. ---
+UV := uv run --locked
+need_uv = @command -v uv >/dev/null || { echo "Instale o uv: https://docs.astral.sh/uv/"; exit 1; }
+# Só arquivos Python de FILES (o hook de formatação passa qualquer arquivo editado).
+PY_FILES = $(filter %.py %.pyi,$(FILES))
+
+.PHONY: help setup lint lint-stack format test security sbom build _build-todo run check check-rapido clean
 
 help: ## Lista os comandos disponíveis
 	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | \
@@ -32,19 +38,35 @@ setup: ## Prepara o ambiente local (git hooks + dependências)
 	@command -v pre-commit >/dev/null || { echo "Instale o pre-commit: pipx install pre-commit"; exit 1; }
 	pre-commit install
 	@[ -f .env ] || cp .env.example .env
-	$(call todo,instalar dependências da stack) # TODO(lang)
+	$(need_uv)
+	uv sync --locked
 
 lint: ## Lint e checagem de formatação (todos os arquivos) + testes dos hooks da IA
 	@command -v pre-commit >/dev/null || { echo "Instale o pre-commit: pipx install pre-commit"; exit 1; }
 	SKIP=no-commit-to-branch pre-commit run --all-files
 	@scripts/test-hooks.sh
-	$(call todo,linter + type checker da stack) # TODO(lang)
+	@$(MAKE) lint-stack
+
+lint-stack: ## Só o lint da stack (ruff, mypy, import-linter) — a CI chama este alvo
+	$(need_uv)
+	$(UV) ruff check .
+	$(UV) ruff format --check .
+	$(UV) mypy
+	$(UV) lint-imports
 
 format: ## Formata o código (FILES="a b" para formatar só esses arquivos)
-	$(call todo,formatter da stack) # TODO(lang)
+	$(need_uv)
+ifeq ($(strip $(FILES)),)
+	$(UV) ruff check --fix .
+	$(UV) ruff format .
+else ifneq ($(strip $(PY_FILES)),)
+	$(UV) ruff check --fix $(PY_FILES)
+	$(UV) ruff format $(PY_FILES)
+endif
 
 test: ## Executa testes com cobertura
-	$(call todo,executar testes com cobertura) # TODO(lang)
+	$(need_uv)
+	$(UV) pytest
 
 security: ## Segredos (histórico git), vulnerabilidades, misconfig e licenças (falha se encontrar algo)
 	@if command -v gitleaks >/dev/null; then gitleaks git --redact .; \
@@ -66,10 +88,12 @@ build: ## Gera artefato / imagem
 		else $(MAKE) -s _build-todo; fi
 
 _build-todo:
-	$(call todo,build da stack) # TODO(lang)
+	$(need_uv)
+	uv build
 
 run: ## Executa localmente
-	$(call todo,executar a aplicação) # TODO(lang)
+	$(need_uv)
+	$(UV) python -m app
 
 check: ## Tudo que a CI valida; lista o que NÃO rodou (STRICT=1 falha nesse caso)
 	@log=$$(mktemp); trap 'rm -f "$$log"' EXIT; \
@@ -85,8 +109,10 @@ check-rapido: ## Para iterações: lint só dos arquivos alterados + testes (ant
 		git diff --name-only --diff-filter=d main...HEAD 2>/dev/null; \
 		git ls-files --others --exclude-standard 2>/dev/null; } | sort -u); \
 	if [ -n "$$files" ]; then SKIP=no-commit-to-branch pre-commit run --files $$files; \
-	else echo "Nenhum arquivo alterado."; fi
+	else echo "Nenhum arquivo alterado."; fi; \
+	py=$$(printf '%s\n' $$files | grep -E '\.pyi?$$' || true); \
+	if [ -n "$$py" ]; then $(UV) ruff check $$py && $(UV) ruff format --check $$py; fi
 	@$(MAKE) test
 
 clean: ## Remove artefatos gerados
-	rm -rf dist build out coverage reports tmp
+	rm -rf dist build out coverage reports tmp .pytest_cache .mypy_cache .ruff_cache .coverage
