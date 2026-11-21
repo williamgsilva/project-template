@@ -42,3 +42,11 @@ __pycache__/
 .ruff_cache/
 .coverage
 .coverage.*
+
+# --- Dados locais (bancos SQLite podem guardar dados pessoais) ---
+data/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3

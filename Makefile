@@ -114,7 +114,8 @@ check-rapido: ## Para iterações: lint só dos arquivos alterados + testes (ant
 	@command -v pre-commit >/dev/null || { echo "Instale o pre-commit: pipx install pre-commit"; exit 1; }
 	@files=$$( { git diff --name-only --diff-filter=d HEAD 2>/dev/null; \
 		git diff --name-only --diff-filter=d main...HEAD 2>/dev/null; \
-		git ls-files --others --exclude-standard 2>/dev/null; } | sort -u); \
+		git ls-files --others --exclude-standard 2>/dev/null; } | sort -u | \
+		while IFS= read -r f; do if [ -f "$$f" ]; then printf '%s\n' "$$f"; fi; done); \
 	if [ -n "$$files" ]; then SKIP=no-commit-to-branch pre-commit run --files $$files; \
 	else echo "Nenhum arquivo alterado."; fi; \
 	py=$$(printf '%s\n' $$files | grep -E '\.pyi?$$' || true); \

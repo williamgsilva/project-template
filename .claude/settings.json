@@ -69,6 +69,9 @@
       "Bash(git switch * --discard-changes*)",
       "Bash(rm -rf *)",
       "Bash(rm -r *)",
+      "Bash(find * -delete*)",
+      "Bash(find * -exec*)",
+      "Bash(find * -ok*)",
       "Bash(docker *)",
       "Bash(kubectl *)",
       "Bash(terraform *)",
@@ -133,6 +136,7 @@
         "pypi.org",
         "files.pythonhosted.org",
         "github.com",
+        "api.github.com",
         "objects.githubusercontent.com",
         "release-assets.githubusercontent.com",
         "mirror.gcr.io"
