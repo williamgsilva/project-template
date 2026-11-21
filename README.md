@@ -218,6 +218,7 @@ A mesma interface em qualquer linguagem. A CI chama os mesmos alvos que você ro
 | `/estudar <tema>` | Modo tutor: você escreve as decisões de design | Aprender uma tecnologia ou padrão | Quando a prioridade é prazo |
 | `/avaliar-externo <url>` | Avalia repositório, skill, plugin ou MCP de terceiros (proveniência, licença, código executável, injeção de prompt) e dá um veredito | **Antes** de instalar ou copiar qualquer coisa de fora | Biblioteca já aprovada, só subindo versão (use dependabot + `make security`) |
 | `/briefing <tema>` | Transforma seus planos e ideias em documento em `docs/planos/`, com perguntas numeradas e fatos separados de premissas | Passar um plano, objetivo ou ideia para a IA | Requisitos de software (use `01-descoberta` ou `/spec`) |
+| `/depurar <problema>` | Reproduz, testa hipóteses e escreve o teste antes da correção | Teste falhando, bug, "funciona às vezes" | Feature nova (use `/planejar`) |
 
 #### Proteções da IA
 

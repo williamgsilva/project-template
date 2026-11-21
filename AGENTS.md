@@ -59,6 +59,7 @@ completo fica para o fim.
   antes de instalar ou copiar; nada de fora entra sem o meu ok.
 - Planos e objetivos do usuário ficam em `docs/planos/` (`docs/prompts/12-briefing.md`): leia o
   plano relevante antes de opinar sobre ele; separe fato de premissa.
+- Bug ou teste falhando: causa raiz antes da correção (`docs/prompts/14-depurar.md`).
 - Skills, prompts e plugins: `docs/prompts/README.md`.
 
 ## Regras de código

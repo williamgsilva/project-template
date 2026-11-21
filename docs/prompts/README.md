@@ -17,6 +17,7 @@ qualquer assistente (Claude Code, Copilot Chat, Cursor…). Melhore-os conforme 
 | [10-loop-autonomo.md](10-loop-autonomo.md) | Automação | Loop autônomo com limites rígidos de iterações e escopo |
 | [11-avaliar-externo.md](11-avaliar-externo.md) | Segurança | Avaliar repositório, skill, plugin ou MCP de terceiros antes de adotar |
 | [12-briefing.md](12-briefing.md) | Comunicação | Transformar seus planos em documento de trabalho em `docs/planos/` |
+| [14-depurar.md](14-depurar.md) | Correção | Bug ou teste falhando: reproduzir, hipóteses, causa raiz e teste antes da correção |
 
 Fluxo sugerido por tarefa:
 
@@ -40,6 +41,7 @@ Cada skill apenas aponta para o prompt correspondente, que continua sendo a font
 | `/estudar <tema>` | 08-estudo | Você escreve as decisões de design |
 | `/avaliar-externo <url> [uso]` | 11-avaliar-externo | Somente leitura; veredito antes de instalar qualquer coisa de fora |
 | `/briefing <tema> [despejo]` | 12-briefing | Perguntas numeradas; grava em `docs/planos/` após seu ok |
+| `/depurar <problema>` | 14-depurar | Reproduz, testa hipóteses, para após 3 tentativas |
 
 ### Skills de terceiros
 
@@ -49,6 +51,7 @@ estes arquivos: para atualizar, avalie o diff entre os SHAs e copie a pasta inte
 | Skill | Origem (SHA) | Licença | Avaliada em | Para quê |
 | ----- | ------------ | ------- | ----------- | -------- |
 | `discernment-nudge` | [anthropics/skills@1780c5e](https://github.com/anthropics/skills/tree/1780c5e5a552fd4d1c9d6a7b0cab26b0c2bef064/skills/discernment-nudge) | Apache-2.0 | 2026-11-14 | Depois de recomendações, planos e estimativas, fecha com 2–3 perguntas para checar fatos e premissas (no máximo uma vez por conversa). Só texto, sem scripts |
+| `security-audit` | [cloudflare/security-audit-skill@c1c8a8c](https://github.com/cloudflare/security-audit-skill/tree/c1c8a8c1471069fb0e188eeaff69b8e8db6564a8/skills/security-audit) | MIT | 2026-11-18 | Guia e auditoria de segurança com verificação independente de cada achado; tem guia de IA/LLM (injeção de prompt, ferramentas). Validadores `.cjs` só usam `fs`. O AGENTS.md vence: auditoria completa e subagentes só quando você pedir |
 
 Avaliadas e **não** adotadas: `doc-coauthoring` (sem arquivo de licença; usa subagentes e se
 sobrepõe a `/spec` e `/briefing` — a parte útil, perguntas numeradas com resposta curta, foi
@@ -59,7 +62,7 @@ incorporada ao 12-briefing).
 | Camada | O que faz | Limitação |
 | ------ | --------- | --------- |
 | `permissions.deny` em [settings.json](../../.claude/settings.json) | Bloqueia leitura/edição de `.env*`, `secrets/`, chaves e das credenciais da pasta pessoal (`~/.ssh`, `~/.aws`, `~/.config/gh`…); bloqueia `git push --force`, `git commit --no-verify` e `sudo`; desativa `--dangerously-skip-permissions` | As regras Read/Edit valem para as ferramentas e para `cat`/`head`/`tail`/`sed`/`tee` e redirecionamentos no Bash, mas **não** para `grep -r .` nem para scripts que abrem arquivos sozinhos |
-| `permissions.ask` | Pede confirmação para rede (`curl`, `wget`), `git push`, comandos git destrutivos (`reset --hard`, `clean`, `rebase`, `stash drop/clear`, `branch -D`, `switch -f`), `rm -r(f)`, `docker`, `kubectl`, `terraform`, `make build`/`clean` e edições em `.github/`, `.claude/` e `Makefile` | Mais confirmações durante o trabalho |
+| `permissions.ask` | Pede confirmação para rede (`curl`, `wget`), `git push`, comandos git destrutivos (`reset --hard`, `clean`, `rebase`, `stash drop/clear`, `branch -D`, `switch -f`), `rm -r(f)`, `find -delete`/`-exec`, `docker`, `kubectl`, `terraform`, `make build`/`clean` e edições em `.github/`, `.claude/` e `Makefile` | Mais confirmações durante o trabalho |
 | `permissions.allow` | Libera sem perguntar: alvos do `make` (exatos), git do dia a dia, leitura e manipulação de arquivos. **Nenhum interpretador** (`python3`, `node`, `npx`, `npm run`): eles executam código arbitrário | Só vale depois de você confiar na pasta (*workspace trust*) |
 | Hook [protect-secrets.sh](../../.claude/hooks/protect-secrets.sh) (PreToolUse) | Bloqueia comandos de shell que citam `.env` (inclusive entre aspas e com glob), `secrets/`, arquivos de chave e credenciais da pasta pessoal. Testado por `scripts/test-hooks.sh` (roda no `make lint`) | Baseado em texto: código que monta o caminho em tempo de execução escapa |
 | Hook [format.sh](../../.claude/hooks/format.sh) (PostToolUse) | Formata só o arquivo editado (`make format FILES=...`) | Inativo até a stack implementar `make format` |
