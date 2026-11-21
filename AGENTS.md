@@ -15,9 +15,24 @@ Copilot, Cursor, Codex…). Mantenha-o **curto, objetivo e atualizado**.
 Para build, lint, testes e segurança use sempre o `Makefile` (nunca invente comandos);
 `git` e ferramentas de leitura podem ser usados diretamente:
 
-- `make lint` · `make format` · `make test` · `make security` · `make check`
+- `make lint` · `make format` · `make test` · `make security` · `make check` · `make check-rapido`
 
-Antes de considerar uma tarefa pronta: **`make check` deve passar.**
+Antes de considerar uma tarefa pronta: **`make check` deve passar** e, se o resumo final
+listar etapas **NÃO EXECUTADAS**, diga quais na sua resposta — etapa que não rodou não conta
+como verificada. Em iterações (loop, tarefas de spec) use `make check-rapido`; o `make check`
+completo fica para o fim.
+
+## Economia de contexto (obrigatório)
+
+- Os arquivos em `docs/` são referência: leia **só o que a tarefa atual exige**, e só a
+  seção relevante (`rg -n` para achar, depois leitura parcial). Nunca leia `docs/` inteiro.
+- Busque antes de abrir: `rg`/`grep` para localizar, leitura parcial para arquivos grandes.
+  Não releia arquivo que já está no contexto nem confira uma edição relendo o arquivo.
+- Limite a saída de comandos: `| tail -n 30`, `--quiet`, `-q`. Nunca despeje logs, lockfiles,
+  `node_modules`, dumps ou arquivos gerados no contexto.
+- Não crie subagentes nem rode reviews multiagente sem eu pedir.
+- Respostas curtas: o que mudou, como verificar, pendências. Sem repetir código já mostrado.
+- Tarefa trivial (≤ ~3 arquivos, sem decisão de arquitetura): faça direto, sem plano/spec/ADR.
 
 ## Regras de arquitetura (obrigatórias)
 
@@ -31,7 +46,8 @@ Antes de considerar uma tarefa pronta: **`make check` deve passar.**
 ## Forma de trabalhar
 
 - Explore o código antes de supor; reutilize funções e padrões existentes.
-- Tarefa não trivial: plano primeiro (`docs/prompts/06-plano.md`), código depois.
+- Tarefa não trivial (vários módulos ou decisão de arquitetura): plano primeiro
+  (`docs/prompts/06-plano.md`), código depois.
 - Nunca reverta ou sobrescreva mudanças que você não fez.
 - Verifique executando o sistema, não só com testes (`docs/prompts/07-verificar.md`).
 - Feature média/grande: spec em `docs/specs/<feature>/` (`docs/prompts/09-spec.md`).
@@ -39,6 +55,10 @@ Antes de considerar uma tarefa pronta: **`make check` deve passar.**
   branch `loop/*`; nunca push, deploy ou migração (`docs/prompts/10-loop-autonomo.md`).
 - Nunca diga que algo foi testado ou verificado sem ter executado de fato.
 - Use os termos de `docs/glossario.md`; termo novo de negócio → adicione lá primeiro.
+- Repositório, skill, plugin ou MCP de terceiros: avalie com `docs/prompts/11-avaliar-externo.md`
+  antes de instalar ou copiar; nada de fora entra sem o meu ok.
+- Planos e objetivos do usuário ficam em `docs/planos/` (`docs/prompts/12-briefing.md`): leia o
+  plano relevante antes de opinar sobre ele; separe fato de premissa.
 - Skills, prompts e plugins: `docs/prompts/README.md`.
 
 ## Regras de código

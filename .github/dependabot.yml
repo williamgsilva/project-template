@@ -9,8 +9,25 @@ updates:
     groups:
       actions:
         patterns: ["*"]
+    # Espera 7 dias após a publicação de uma versão nova (não vale para atualizações de
+    # segurança): reduz o risco de adotar uma versão maliciosa recém-publicada.
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: ci
+
+  # Hooks do .pre-commit-config.yaml (fixados por SHA, com a tag em "# frozen:")
+  - package-ecosystem: pre-commit
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      pre-commit:
+        patterns: ["*"]
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
 
   # Habilite quando existir Dockerfile:
   # - package-ecosystem: docker

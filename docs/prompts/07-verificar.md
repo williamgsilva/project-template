@@ -13,7 +13,8 @@ Verifique que a mudança desta branch funciona de verdade (git diff main...HEAD)
    - API/servidor: suba a aplicação e envie a requisição (curl/httpie), capture a resposta
    - Interface web: abra no navegador (ou Playwright) e capture a tela
    - Biblioteca: use pela API pública do pacote, não importando arquivos internos
-   - Pipeline de CI: dispare o workflow e leia a execução
+   - Pipeline de CI: valide localmente (ex.: actionlint) e peça para EU disparar o workflow
+     (exige push e gasta minutos de CI)
    Função interna não é superfície: siga até quem a chama e chegue a uma das opções acima.
 3. Exercite o caminho feliz, pelo menos um caso de erro e um caso de borda.
 4. Não conta como verificação: rodar testes de novo, importar a função e chamá-la num

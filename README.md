@@ -68,16 +68,17 @@ arquivos e oferece reiniciar o histórico do git. Depois, siga
 - **Volume de documentação:** são cerca de 40 documentos. Para scripts ou protótipos
   descartáveis, a estrutura completa é exagero (veja [Quando não usar](#quando-não-usar-este-template)).
 - **Dependência de ferramentas externas:** `pre-commit` (Python), `gitleaks` e `trivy` precisam
-  estar instalados para o `make check` local ser completo; sem eles, a varredura só acontece na CI.
+  estar instalados para o `make check` local ser completo; sem eles, a varredura só acontece na CI
+  e o `make check` lista a etapa como **NÃO EXECUTADO** (com `STRICT=1`, falha).
 - **Hook `no-commit-to-branch`:** bloqueia commit direto na `main` (força PR). Para quem
   trabalha sozinho pode ser incômodo, e o **primeiro commit** de um projeto novo precisa de
   `SKIP=no-commit-to-branch git commit ...`.
 - **Actions fixadas por SHA** são menos legíveis; a versão fica no comentário e o Dependabot
   atualiza os dois.
-- **Proteções da IA têm limites:** o hook de segredos é baseado em texto (um comando ofuscado
-  de propósito pode escapar) e o sandbox exige `bubblewrap` e `socat` no Linux — sem eles, o
-  Claude Code só avisa e roda sem sandbox. A defesa mais forte continua sendo **não ter
-  segredos de produção na máquina**.
+- **Proteções da IA têm limites:** o hook de segredos é baseado em texto (código que monta o
+  caminho em tempo de execução escapa) e o sandbox exige `bubblewrap` e `socat` no Linux — sem
+  eles, o Claude Code **não inicia** (`failIfUnavailable`). A defesa mais forte continua sendo
+  **não ter segredos de produção na máquina**.
 - **Scanner de licenças** falha em dependências GPL/AGPL: se o projeto aceitar alguma, registre
   a exceção num ADR (ver [seguranca.md](docs/standards/seguranca.md)).
 - **No próprio repositório do template**, `CODEOWNERS` e o link de vulnerabilidade da issue
@@ -144,16 +145,16 @@ Faça uma vez por projeto, logo após criar o repositório:
 | # | Ação | Por quê |
 | - | ---- | ------- |
 | 1 | Instalar `pre-commit` (`pipx install pre-commit`), `gitleaks` e `trivy` | Sem eles, `make lint` falha e `make security` só avisa |
-| 1b | Linux: instalar `bubblewrap` e `socat` (ex.: `sudo apt install bubblewrap socat`); confira com `/sandbox` no Claude Code | Ativa o sandbox da IA configurado no projeto |
+| 1b | Linux: instalar `bubblewrap` e `socat` (ex.: `sudo apt install bubblewrap socat`); confira com `/sandbox` no Claude Code | O projeto exige o sandbox (`failIfUnavailable`): sem eles o Claude Code não inicia aqui |
 | 2 | `make setup` | Instala os git hooks (inclusive validação da mensagem de commit) e cria o `.env` |
 | 3 | Criar o arquivo `LICENSE` ([choosealicense.com](https://choosealicense.com)) | O README e o init referenciam a licença |
-| 4 | GitHub → Settings → Branches: proteger `main` (PR obrigatório, checks `Lint`, `Test`, `Build`, `Secrets`, `Vulnerabilities`, `Workflows`, 1 aprovação, sem force-push, histórico linear) | Garante o fluxo trunk-based (veja [docs/standards/git.md](docs/standards/git.md)) |
+| 4 | GitHub → Settings → Branches: proteger `main` (PR obrigatório, checks `Lint`, `Test`, `Build`, `Secrets`, `Vulnerabilities`, `Workflows`, sem force-push, histórico linear; aprovações: 1 em time, **0 se você trabalha sozinho**) | Garante o fluxo trunk-based (veja [docs/standards/git.md](docs/standards/git.md)) |
 | 4b | GitHub → Settings → Actions → General: marcar *Allow GitHub Actions to create and approve pull requests* | O release-please precisa abrir o PR de release |
 | 4c | GitHub → Settings → General → Pull Requests: permitir **apenas squash merge** | Evita entradas duplicadas no CHANGELOG (o merge commit repete o título do PR) |
 | 4d | A cada PR de release: clicar em **Approve and run workflows** antes do merge | O GitHub retém a CI de PRs atualizados pelo bot (ver [git.md](docs/standards/git.md#versionamento--semver)) |
 | 5 | GitHub → Settings → Code security: *Secret scanning*, *Push protection*, *Dependabot alerts*, *Private vulnerability reporting* | Camada extra além do gitleaks |
 | 6 | Se o repositório for de **organização**, criar o secret `GITLEAKS_LICENSE` (gratuita em gitleaks.io) | O job *Secrets* da CI exige a licença nesse caso |
-| 6b | Repositório **privado**: em `scorecard.yml`, `publish_results: false` | A publicação no scorecard.dev só funciona em repos públicos |
+| 6b | Repositório **público**: criar a variável `CODE_SCANNING` = `true` (Settings → Secrets and variables → Actions → Variables) | Liga o Trivy na aba *Security* e o Scorecard. Em repositório **privado**, deixe sem: a aba *Security* exige licença paga do GitHub Code Security e o resultado do Trivy fica no log do job |
 | 7 | Preencher `docs/architecture/overview.md` (contexto, escopo, requisitos não funcionais), `docs/glossario.md` e o `docs/operations/runbook.md` antes de produção | Base para decisões, para a IA e para o plantão |
 | 8 | (Opcional) Instalar os plugins oficiais do Claude Code recomendados em [docs/prompts/README.md](docs/prompts/README.md#plugins-oficiais-recomendados) | Fluxos prontos de feature, review e segurança |
 
@@ -176,7 +177,8 @@ A mesma interface em qualquer linguagem. A CI chama os mesmos alvos que você ro
 | `make sbom` | Gera o SBOM (CycloneDX) em `reports/` | Auditoria; o release já gera e assina um SBOM |
 | `make build` | Gera a imagem Docker (se houver `Dockerfile`) ou o artefato da stack | Antes de publicar |
 | `make run` | Executa localmente | Desenvolvimento |
-| `make check` | `lint` + `test` + `security` — o mesmo que a CI valida | **Critério de pronto** de qualquer tarefa |
+| `make check` | `lint` + `test` + `security` — o mesmo que a CI valida; no fim, lista as etapas **NÃO EXECUTADAS** (`STRICT=1` falha nesse caso) | **Critério de pronto** de qualquer tarefa |
+| `make check-rapido` | Lint só dos arquivos alterados + testes | A cada iteração de loop/tarefa de spec; antes do PR, `make check` |
 | `make clean` | Remove artefatos gerados | Quando precisar de um build limpo |
 
 ### Automação de qualidade e segurança
@@ -199,7 +201,7 @@ A mesma interface em qualquer linguagem. A CI chama os mesmos alvos que você ro
 | Item | O que é | Quando usar |
 | ---- | ------- | ----------- |
 | [AGENTS.md](AGENTS.md) | Contrato com **qualquer** agente: comandos, regras de arquitetura, código, segurança e forma de trabalhar. O [CLAUDE.md](CLAUDE.md) apenas o importa | Lido automaticamente; mantenha curto e atualizado |
-| [docs/prompts/](docs/prompts/) | 10 prompts reutilizáveis (descoberta, arquitetura, feature, review, legado, plano, verificar, estudo, spec, loop) | Copie e cole em qualquer ferramenta de IA |
+| [docs/prompts/](docs/prompts/) | 12 prompts reutilizáveis (descoberta, arquitetura, feature, review, legado, plano, verificar, estudo, spec, loop, avaliar externo, briefing) | Copie e cole em qualquer ferramenta de IA |
 | [.claude/skills/](.claude/skills/) | Os prompts como comandos do Claude Code (tabela abaixo) | No Claude Code |
 | [.claude/settings.json](.claude/settings.json) + [.claude/hooks/](.claude/hooks/) | Permissões, sandbox e hooks **determinísticos** (a IA não consegue ignorar) | Sempre ativos no Claude Code |
 
@@ -214,12 +216,16 @@ A mesma interface em qualquer linguagem. A CI chama os mesmos alvos que você ro
 | `/adr <decisão>` | Cria o ADR numerado e atualiza o overview | Decisão cara de reverter, tecnologia, fornecedor | Escolhas locais e facilmente reversíveis |
 | `/loop-seguro <tarefa>` | Execução autônoma com **limite de iterações** (padrão 10, máx. 25), branch `loop/*`, commit por iteração e parada sem progresso | Tarefa mecânica com critério de pronto verificável (ex.: migrar N arquivos) | Requisito ambíguo, design, segurança, dados |
 | `/estudar <tema>` | Modo tutor: você escreve as decisões de design | Aprender uma tecnologia ou padrão | Quando a prioridade é prazo |
+| `/avaliar-externo <url>` | Avalia repositório, skill, plugin ou MCP de terceiros (proveniência, licença, código executável, injeção de prompt) e dá um veredito | **Antes** de instalar ou copiar qualquer coisa de fora | Biblioteca já aprovada, só subindo versão (use dependabot + `make security`) |
+| `/briefing <tema>` | Transforma seus planos e ideias em documento em `docs/planos/`, com perguntas numeradas e fatos separados de premissas | Passar um plano, objetivo ou ideia para a IA | Requisitos de software (use `01-descoberta` ou `/spec`) |
 
 #### Proteções da IA
 
-Em camadas: `permissions` (deny/ask) no `settings.json`, hook que **bloqueia comandos de shell
-que acessam `.env`/`secrets/`/chaves** (as regras Read/Edit não valem para o Bash), hook de
-formatação após edições e sandbox. Detalhes, o que cada camada cobre e suas limitações:
+Em camadas: `permissions` (deny/ask/allow) no `settings.json` — as regras Read/Edit valem também
+para `cat`/`head`/`tail`/`sed` e redirecionamentos no Bash, mas **não** para scripts que abrem
+arquivos sozinhos —, sandbox que nega as pastas de credenciais da sua pasta pessoal, hook que
+**bloqueia comandos de shell que citam `.env`/`secrets/`/chaves/credenciais** e hook de
+formatação após edições. Detalhes, o que cada camada cobre e suas limitações:
 [docs/prompts/README.md](docs/prompts/README.md#proteções-determinísticas-claude).
 Ajustes pessoais vão em `.claude/settings.local.json`, ignorado pelo git.
 
@@ -234,6 +240,7 @@ Ajustes pessoais vão em `.claude/settings.local.json`, ignorado pelo git.
 | [docs/glossario.md](docs/glossario.md) | Linguagem ubíqua: termos de negócio e seus nomes no código | Antes de nomear entidades, tabelas e endpoints |
 | [docs/security/threat-model.md](docs/security/threat-model.md) | Modelagem de ameaças STRIDE (inclui riscos de LLM) | Design de feature sensível |
 | [docs/specs/](docs/specs/) | Especificações de features (requisitos, design, tarefas) | Features médias/grandes |
+| [docs/planos/](docs/planos/) | Planos, objetivos e ideias registrados com `/briefing` | Contexto compartilhado com a IA entre conversas |
 | [estrutura-de-pastas.md](docs/standards/estrutura-de-pastas.md) | Módulos por negócio, camadas hexagonais e regra de dependência | Ao criar módulos ou arquivos |
 | [codigo.md](docs/standards/codigo.md) | Princípios, nomes, funções, erros, logs, configuração, dependências | Sempre |
 | [git.md](docs/standards/git.md) | Trunk-based, branches, Conventional Commits, SemVer, proteção da `main` | Antes do primeiro commit |

@@ -12,5 +12,6 @@ Siga exatamente o processo de `docs/prompts/09-spec.md` (leia o arquivo agora).
 - Uma fase por vez: requisitos → design → tarefas. Pare ao fim de cada fase e peça aprovação.
 - No design de feature sensível, inclua a modelagem de ameaças (`docs/security/threat-model.md`).
 - Ao executar ("executar ..."), releia os três arquivos antes de cada tarefa, faça uma
-  tarefa por vez, rode `make check`, marque a tarefa como concluída em `tasks.md` e pare.
+  tarefa por vez, rode `make check-rapido`, marque a tarefa como concluída em `tasks.md` e pare
+  (na última tarefa, `make check` completo).
 - Nunca pule a aprovação, mesmo que o pedido diga para seguir direto.

@@ -17,6 +17,9 @@ permissions: read-all
 jobs:
   analysis:
     name: Scorecard
+    # Envia SARIF para a aba Security: só roda com a variável CODE_SCANNING = "true"
+    # (grátis em repo público; repo privado exige licença do GitHub Code Security).
+    if: vars.CODE_SCANNING == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:

@@ -3,7 +3,7 @@
 Loops autônomos (o agente repete a tarefa até concluir) economizam tempo em trabalho
 repetitivo e bem definido — por exemplo, migrar N arquivos para um padrão ou corrigir todos
 os erros de lint. Sem limites, eles **gastam tokens sem fim, podem entrar em ciclo e fazer
-estragos**. O plugin oficial `ralph-wiggum` roda **sem limite por padrão**.
+estragos**. O plugin oficial `ralph-loop` roda **sem limite por padrão**.
 
 ## Quando usar (e quando não)
 
@@ -19,7 +19,8 @@ estragos**. O plugin oficial `ralph-wiggum` roda **sem limite por padrão**.
 2. **Limite de iterações**: padrão 10, teto 25. Nunca ilimitado.
 3. **Isolamento**: branch dedicada `loop/<tarefa>`; de preferência em devcontainer/sandbox
    (veja o `.devcontainer` com firewall do repositório oficial `anthropics/claude-code`).
-4. **Checkpoint por iteração**: `make check` + commit `chore(loop): iteração N/M - <resumo>`.
+4. **Checkpoint por iteração**: `make check-rapido` + commit `chore(loop): iteração N/M - <resumo>`
+   (o `make check` completo roda uma vez, ao final).
    Desfazer qualquer passo fica trivial (`git revert` ou `git reset` na branch do loop).
 5. **Parada por falta de progresso**: 3 iterações seguidas com o mesmo erro ou sem avanço → parar e reportar.
 6. **Proibido no loop**: `git push`, deploy, migração em banco real, alterar `.github/`,
@@ -40,7 +41,8 @@ Escopo: <arquivos/módulos permitidos>. Fora de escopo: <o que não tocar>.
 Limite: <N> iterações (máx. 25).
 
 Regras: siga docs/prompts/10-loop-autonomo.md. Crie a branch loop/<nome>. A cada iteração:
-1 mudança pequena → `make check` → commit "chore(loop): iteração i/N - <resumo>".
+1 mudança pequena → `make check-rapido` → commit "chore(loop): iteração i/N - <resumo>".
+Ao final, rode `make check` completo.
 Pare ao atingir o critério, ao fim do limite, após 3 iterações sem progresso, se precisar de
 algo proibido ou se surgir dúvida de requisito. Ao parar, entregue o relatório final.
 ```
@@ -50,5 +52,5 @@ algo proibido ou se surgir dúvida de requisito. Ao parar, entregue o relatório
 | Forma | Como limitar |
 | ----- | ------------ |
 | Skill do template `/loop-seguro` | Limite e regras já embutidos |
-| Plugin `ralph-wiggum` | **Sempre** `/ralph-loop "<prompt>" --max-iterations 10 --completion-promise "PRONTO"`; `/cancel-ralph` para parar |
+| Plugin `ralph-loop` | **Sempre** `/ralph-loop "<prompt>" --max-iterations 10 --completion-promise "PRONTO"`; `/cancel-ralph` para parar |
 | Headless/CI (`claude -p`) | Rodar em container descartável, sem credenciais de produção, com timeout do job e `--max-turns` |

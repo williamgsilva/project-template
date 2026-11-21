@@ -7,22 +7,48 @@
       "Read(./.env.local)",
       "Read(./.env.*.local)",
       "Read(./.env.development)",
+      "Read(./.env.dev)",
+      "Read(./.env.test)",
+      "Read(./.env.ci)",
       "Read(./.env.staging)",
       "Read(./.env.production)",
+      "Read(./.env.prod)",
       "Read(./secrets/**)",
       "Read(./**/*.pem)",
       "Read(./**/*.key)",
+      "Read(./**/*.p12)",
+      "Read(./**/*.pfx)",
+      "Read(./**/id_rsa*)",
+      "Read(./**/id_ed25519*)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.config/gh/**)",
+      "Read(~/.gnupg/**)",
+      "Read(~/.kube/**)",
+      "Read(~/.docker/config.json)",
+      "Read(~/.npmrc)",
+      "Read(~/.pypirc)",
+      "Read(~/.netrc)",
+      "Read(~/.git-credentials)",
       "Edit(./.env)",
       "Edit(./.env.local)",
       "Edit(./.env.*.local)",
       "Edit(./.env.development)",
+      "Edit(./.env.dev)",
+      "Edit(./.env.test)",
+      "Edit(./.env.ci)",
       "Edit(./.env.staging)",
       "Edit(./.env.production)",
+      "Edit(./.env.prod)",
       "Edit(./secrets/**)",
       "Bash(git push --force*)",
       "Bash(git push -f*)",
       "Bash(git push * --force*)",
       "Bash(git push * -f*)",
+      "Bash(git commit --no-verify*)",
+      "Bash(git commit * --no-verify*)",
+      "Bash(git commit -n *)",
+      "Bash(git commit * -n *)",
       "Bash(sudo *)"
     ],
     "ask": [
@@ -32,25 +58,101 @@
       "Bash(git reset --hard*)",
       "Bash(git clean *)",
       "Bash(git rebase *)",
+      "Bash(git stash drop*)",
+      "Bash(git stash clear*)",
+      "Bash(git branch -D*)",
+      "Bash(git branch * -D*)",
+      "Bash(git branch --delete --force*)",
+      "Bash(git switch -f*)",
+      "Bash(git switch * -f*)",
+      "Bash(git switch --discard-changes*)",
+      "Bash(git switch * --discard-changes*)",
       "Bash(rm -rf *)",
       "Bash(rm -r *)",
       "Bash(docker *)",
       "Bash(kubectl *)",
       "Bash(terraform *)",
+      "Bash(make clean*)",
+      "Bash(make build*)",
       "Edit(./.github/**)",
-      "Edit(./.claude/**)"
+      "Edit(./.claude/**)",
+      "Edit(./Makefile)"
     ],
     "allow": [
       "Bash(make help)",
       "Bash(make lint)",
+      "Bash(make format)",
       "Bash(make test)",
+      "Bash(make security)",
       "Bash(make check)",
-      "Bash(make security)"
+      "Bash(make check-rapido)",
+      "Bash(STRICT=1 make check)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)",
+      "Bash(git branch*)",
+      "Bash(git switch*)",
+      "Bash(git checkout -b*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git stash*)",
+      "Bash(git fetch*)",
+      "Bash(git restore --staged*)",
+      "Bash(ls*)",
+      "Bash(cat *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(wc *)",
+      "Bash(find *)",
+      "Bash(grep *)",
+      "Bash(rg *)",
+      "Bash(tree*)",
+      "Bash(pwd)",
+      "Bash(which *)",
+      "Bash(command -v *)",
+      "Bash(mkdir *)",
+      "Bash(touch *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(chmod +x *)",
+      "Bash(diff *)",
+      "Bash(sort *)",
+      "Bash(jq *)",
+      "Bash(echo *)",
+      "Bash(pre-commit run*)"
     ]
   },
   "sandbox": {
     "enabled": true,
-    "autoAllowBashIfSandboxed": false
+    "autoAllowBashIfSandboxed": true,
+    "failIfUnavailable": true,
+    "allowUnsandboxedCommands": false,
+    "network": {
+      "allowedDomains": [
+        "mirror.gcr.io"
+      ]
+    },
+    "filesystem": {
+      "allowWrite": [
+        "~/.cache/trivy"
+      ],
+      "denyRead": [
+        "~/.ssh",
+        "~/.aws",
+        "~/.config/gh",
+        "~/.config/gcloud",
+        "~/.azure",
+        "~/.gnupg",
+        "~/.kube",
+        "~/.docker/config.json",
+        "~/.npmrc",
+        "~/.pypirc",
+        "~/.netrc",
+        "~/.git-credentials",
+        "~/.claude/.credentials.json"
+      ]
+    }
   },
   "hooks": {
     "PreToolUse": [
@@ -77,5 +179,9 @@
         ]
       }
     ]
+  },
+  "env": {
+    "BASH_MAX_OUTPUT_LENGTH": "12000",
+    "MAX_MCP_OUTPUT_TOKENS": "10000"
   }
 }

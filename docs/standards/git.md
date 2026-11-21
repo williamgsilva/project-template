@@ -10,7 +10,9 @@
 
 ### Proteção da `main` (configurar no GitHub)
 
-- Require pull request + 1 aprovação (+ Code Owners)
+- Require pull request + 1 aprovação (+ Code Owners) — **em time**
+- **Trabalhando sozinho:** 0 aprovações (o GitHub não deixa o autor aprovar o próprio PR) e
+  `/revisar` no lugar do revisor; mantenha PR obrigatório e checks obrigatórios
 - Require status checks (nomes dos jobs): `Lint`, `Test`, `Build`, `Secrets`, `Vulnerabilities`, `Workflows`
 - Require linear history · Block force pushes · Require conversation resolution
 - Habilitar: *Secret scanning*, *Push protection*, *Dependabot alerts*, *Private vulnerability reporting*
